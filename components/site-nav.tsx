@@ -264,11 +264,11 @@ export function SiteNav({
           <Image
             src={SITE_LOGO}
             alt=""
-            width={52}
-            height={52}
+            width={60}
+            height={60}
             className={cn(
-              "h-11 w-auto max-w-full object-contain transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:h-16",
-              isFloating && "h-10 md:h-16",
+              "h-11 w-auto max-w-full object-contain transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:h-[60px]",
+              isFloating && "h-10 md:h-[60px]",
             )}
             priority
           />

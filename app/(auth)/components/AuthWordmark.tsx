@@ -7,7 +7,7 @@ export type AuthWordmarkProps = {
   href?: string;
   /**
    * Pixel size for Next/Image intrinsic dimensions (layout uses responsive classes
-   * matching `SiteNav`: `h-11` / `md:h-16`).
+   * matching `SiteNav`: `h-11` / `md:h-[60px]`).
    */
   imageSize?: number;
   /** Classes for the logo `Image` element */
@@ -35,8 +35,8 @@ export function AuthWordmark({
 
   const content = (
     <>
-      {/* Same visual size as `SiteNav` logo: h-11 (44px) · md:h-16 (64px) */}
-      <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-xl md:h-16 md:w-16">
+      {/* Same visual size as `SiteNav` logo: h-11 · md:60px */}
+      <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-xl md:h-[60px] md:w-[60px]">
         {logoImg}
       </span>
       <span className="ml-0.5 flex min-w-0 items-baseline gap-0 max-[480px]:hidden">
