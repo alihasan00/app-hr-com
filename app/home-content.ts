@@ -194,7 +194,11 @@ export const HOME_IN_ACTION_ITEMS = [
   },
 ] as const;
 
-export type HomeProductScreenshotId = "interviews" | "questionnaire" | "reports";
+export type HomeProductScreenshotId =
+  | "interviews"
+  | "questionnaire"
+  | "reports"
+  | "personas";
 
 /** Solution-page hero image — same light/dark assets as the home product section. */
 export function getHomeProductScreenshot(
@@ -208,6 +212,7 @@ export function getHomeProductScreenshot(
     interviews: "app.reechout.com/interviews",
     questionnaire: "app.reechout.com/questionnaires",
     reports: "app.reechout.com/reports",
+    personas: "app.reechout.com/personas",
   };
   return {
     imageLight: item.imageLight,

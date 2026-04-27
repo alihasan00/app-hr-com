@@ -24,6 +24,7 @@ import {
   Mic,
   Moon,
   Sun,
+  Users,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const SOLUTION_NAV_ITEMS: SolutionNavItem[] = [
   { href: "/interview", label: "Interview", Icon: Mic },
   { href: "/questionnaire", label: "Questionnaire", Icon: ClipboardList },
   { href: "/reports", label: "Reports", Icon: FileChartColumn },
+  { href: "/personas", label: "Personas", Icon: Users },
 ];
 
 const NAV_LINKS_REST = [

@@ -23,6 +23,7 @@ export function isLenisEnabledPath(path: string | null): boolean {
     "/contact",
     "/reports",
     "/questionnaire",
+    "/personas",
     "/terms-of-service",
     "/privacy-policy",
     "/security",

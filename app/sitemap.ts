@@ -11,6 +11,7 @@ const MARKETING_PATHS = [
   "/interview",
   "/questionnaire",
   "/reports",
+  "/personas",
   "/privacy-policy",
   "/security",
   "/terms-of-service",

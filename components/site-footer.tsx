@@ -10,6 +10,7 @@ const FOOTER_LINKS = {
     { href: "/interview", label: "Interviews" },
     { href: "/questionnaire", label: "Questionnaire" },
     { href: "/reports", label: "Reports" },
+    { href: "/personas", label: "Personas" },
   ],
   company: [
     { href: "/about-us", label: "About Us" },
