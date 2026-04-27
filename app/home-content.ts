@@ -165,32 +165,32 @@ export const HOME_IN_ACTION_ITEMS = [
     label: "AI Interviews",
     description:
       "Deploy intelligent, structured phone interviews. Review comprehensive transcripts and automated scoring instantly.",
-    imageLight: "/interview.webp",
-    imageDark: "/interview-dark.webp",
+    imageLight: "https://storage.googleapis.com/images.reechout.com/interview.webp",
+    imageDark: "https://storage.googleapis.com/images.reechout.com/interview-dark.webp",
   },
   {
     id: "questionnaire",
     label: "Smart Screening",
     description:
       "Build dynamic, role-relevant screening questionnaires to qualify candidates before scheduling live technical rounds.",
-    imageLight: "/questionnaire.webp",
-    imageDark: "/questionnaire-dark.webp",
+    imageLight: "https://storage.googleapis.com/images.reechout.com/questionnaire.webp",
+    imageDark: "https://storage.googleapis.com/images.reechout.com/questionnaire-dark.webp",
   },
   {
     id: "reports",
     label: "Hiring Reports",
     description:
       "Generate stakeholder-ready candidate scorecards packed with clear, objective hiring signals and competency analytics.",
-    imageLight: "/report.webp",
-    imageDark: "/report-dark.webp",
+    imageLight: "https://storage.googleapis.com/images.reechout.com/report.webp",
+    imageDark: "https://storage.googleapis.com/images.reechout.com/report-dark.webp",
   },
   {
     id: "personas",
     label: "Candidate Personas",
     description:
       "Define candidate personas and evaluation rubrics to ensure your entire hiring committee is aligned on what 'good' looks like.",
-    imageLight: "/persona.webp",
-    imageDark: "/persona-dark.webp",
+    imageLight: "https://storage.googleapis.com/images.reechout.com/persona.webp",
+    imageDark: "https://storage.googleapis.com/images.reechout.com/persona-dark.webp",
   },
 ] as const;
 
