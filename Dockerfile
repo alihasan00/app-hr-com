@@ -21,8 +21,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Public, non-secret build args. Pass with `--build-arg NEXT_PUBLIC_FOO=bar`.
 # These are inlined into the client bundle, so never pass secrets here.
-ARG NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN bun run build
 
 # ---- runner: minimal runtime image -------------------------------------------
