@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
@@ -8,10 +8,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { 
-  ArrowLeft, X, Smartphone, Monitor, CalendarIcon, 
-  Clock, Zap, Info, Plus, Trash2, Edit2, Upload, FileUp, 
-  Search, FileText
+import {
+  ArrowLeft, X, Smartphone, Monitor, CalendarIcon, Calendar,
+  Clock, Zap, Info, Plus, Trash2, Edit2, Upload, FileUp,
+  Search, FileText, ChevronLeft, ChevronRight, HelpCircle, CheckCircle2
 } from "lucide-react";
 
 import { interviewsApi, CreateInterviewRequest, AddCandidateRequest } from "@/lib/api/interviews";
@@ -68,11 +68,46 @@ export default function CreateInterviewPage() {
   const [bulkErrors, setBulkErrors] = useState<string[]>([]);
   const [isBulkParsing, setIsBulkParsing] = useState(false);
 
+  // Questionnaire modal search + pagination
+  const [questSearchQuery, setQuestSearchQuery] = useState("");
+  const [questPage, setQuestPage] = useState(1);
+  const [questPageSize, setQuestPageSize] = useState(5);
+
   // Queries
   const { data: questionnairesData, isLoading: isLoadingQuestionnaires } = useQuery({
     queryKey: ["questionnaires"],
-    queryFn: () => questionnairesApi.getQuestionnaires(1, 50), // Fetch up to 50 for simplicity
+    queryFn: () => questionnairesApi.getQuestionnaires(1, 50),
   });
+
+  // Questionnaire filtering + pagination
+  const filteredQuestionnaires = useMemo(() => {
+    if (!questionnairesData?.results) return [];
+    const q = questSearchQuery.toLowerCase().trim();
+    if (!q) return questionnairesData.results;
+    return questionnairesData.results.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        (item.details && item.details.toLowerCase().includes(q))
+    );
+  }, [questionnairesData, questSearchQuery]);
+
+  const questTotalPages = Math.max(1, Math.ceil(filteredQuestionnaires.length / questPageSize));
+
+  const pagedQuestionnaires = useMemo(() => {
+    const start = (questPage - 1) * questPageSize;
+    return filteredQuestionnaires.slice(start, start + questPageSize);
+  }, [filteredQuestionnaires, questPage, questPageSize]);
+
+  useEffect(() => { setQuestPage(1); }, [questSearchQuery]);
+  useEffect(() => {
+    if (questPage > questTotalPages) setQuestPage(questTotalPages);
+  }, [questPage, questTotalPages]);
+  useEffect(() => {
+    if (isSelectQuestionnaireOpen) {
+      setQuestSearchQuery("");
+      setQuestPage(1);
+    }
+  }, [isSelectQuestionnaireOpen]);
 
   // Mutations
   const createInterviewMutation = useMutation({
@@ -594,74 +629,169 @@ export default function CreateInterviewPage() {
       </Dialog>
 
       {/* Select Questionnaire Modal */}
-      <Dialog open={isSelectQuestionnaireOpen} onOpenChange={setIsSelectQuestionnaireOpen}>
-        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-[var(--header-floating-border)] bg-[var(--header-floating-bg)] shadow-[0_24px_48px_rgba(var(--shadow-rgb),0.12)] rounded-[var(--radius-md)] backdrop-blur-xl">
-          <DialogHeader className="px-6 py-5 border-b border-[var(--header-floating-border)] bg-transparent">
+      <Dialog open={isSelectQuestionnaireOpen} onOpenChange={(open) => { if (!open) setIsSelectQuestionnaireOpen(false); }}>
+        <DialogContent className="sm:max-w-[800px] h-[80vh] p-0 overflow-hidden border-[var(--header-floating-border)] bg-[var(--header-floating-bg)] shadow-[0_24px_48px_rgba(var(--shadow-rgb),0.12)] rounded-[var(--radius-md)] backdrop-blur-xl flex flex-col">
+          <DialogHeader className="px-6 py-5 border-b border-[var(--header-floating-border)] bg-transparent shrink-0">
             <DialogTitle className="text-xl font-bold">Select Questionnaire</DialogTitle>
             <DialogDescription className="text-sm text-[var(--text-secondary)] mt-1">Choose the evaluation criteria to use for this interview.</DialogDescription>
           </DialogHeader>
-          <div className="p-6 bg-transparent">
-            {isLoadingQuestionnaires ? (
-              <div className="min-h-[200px] p-6" aria-hidden />
-            ) : questionnairesData?.results.length ? (
-              <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-                {questionnairesData.results.map(q => (
-                  <div 
-                    key={q.id} 
-                    className={cn(
-                      "group flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all duration-200",
-                      selectedQuestionnaire?.id === q.id 
-                        ? "border-[var(--primary-color)] bg-[var(--primary-color)]/5 ring-1 ring-[var(--primary-color)]/20" 
-                        : "border-[var(--header-floating-border)] bg-background hover:border-[rgba(var(--primary-color-rgb),0.28)]"
-                    )}
-                    onClick={() => {
-                      setSelectedQuestionnaire(q);
-                      setIsSelectQuestionnaireOpen(false);
-                    }}
-                  >
-                    <div className="flex items-start gap-4">
+
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            {/* Search */}
+            <div className="px-6 pt-5 pb-3 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={questSearchQuery}
+                  onChange={(e) => setQuestSearchQuery(e.target.value)}
+                  placeholder="Search questionnaires..."
+                  className="h-11 w-full pl-12 rounded-xl bg-background border-[var(--header-floating-border)] text-[15px] shadow-sm focus-visible:ring-[var(--primary-color)]"
+                />
+              </div>
+              {questSearchQuery.trim() && (
+                <div className="mt-3 flex items-center justify-between px-1">
+                  <span className="text-sm text-muted-foreground">
+                    Found {filteredQuestionnaires.length} questionnaire{filteredQuestionnaires.length !== 1 ? "s" : ""}
+                  </span>
+                  <Button variant="link" size="sm" className="h-auto p-0 text-[var(--primary-color)]" onClick={() => setQuestSearchQuery("")} type="button">
+                    Clear Search
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto px-6 pb-4">
+              {isLoadingQuestionnaires ? (
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">Loading questionnaires…</div>
+              ) : !questionnairesData?.results.length ? (
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-[var(--header-floating-border)] rounded-[var(--radius-md)] p-10 text-center bg-background/50 mt-2">
+                  <div className="bg-[var(--surface-2)] p-4 rounded-full mb-4 text-[var(--text-muted)]">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold text-[var(--text-primary)] mb-2">No Questionnaires Available</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mb-6 max-w-[280px]">Create a questionnaire first before creating an interview.</p>
+                  <Button className="h-10 rounded-xl px-5 bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white shadow-sm" onClick={() => { setIsSelectQuestionnaireOpen(false); router.push("/questionnaires"); }}>
+                    <Plus className="w-4 h-4 mr-2" /> Create Questionnaire
+                  </Button>
+                </div>
+              ) : filteredQuestionnaires.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground mt-2">
+                  <FileText className="mb-4 h-10 w-10 opacity-30" />
+                  <p className="text-sm">No questionnaires match your search.</p>
+                  <p className="text-xs mt-1">Try adjusting your search criteria.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 mt-2">
+                  {pagedQuestionnaires.map((q) => (
+                    <div
+                      key={q.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedQuestionnaire(q);
+                          setIsSelectQuestionnaireOpen(false);
+                        }
+                      }}
+                      onClick={() => {
+                        setSelectedQuestionnaire(q);
+                        setIsSelectQuestionnaireOpen(false);
+                      }}
+                      className={cn(
+                        "group flex cursor-pointer items-start gap-4 rounded-xl border-2 p-5 transition-all",
+                        selectedQuestionnaire?.id === q.id
+                          ? "border-[var(--primary-color)] bg-[var(--primary-color)]/5"
+                          : "border-[var(--header-floating-border)] bg-background hover:border-[rgba(var(--primary-color-rgb),0.28)]"
+                      )}
+                    >
                       <div className={cn(
-                        "mt-0.5 p-2 rounded-lg transition-colors", 
-                        selectedQuestionnaire?.id === q.id ? "bg-[var(--primary-color)]/10 text-[var(--primary-color)]" : "bg-[var(--surface-2)] text-[var(--text-secondary)] group-hover:text-[var(--primary-color)]"
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors",
+                        selectedQuestionnaire?.id === q.id
+                          ? "bg-[var(--primary-color)]/10 text-[var(--primary-color)]"
+                          : "bg-[var(--surface-2)] text-[var(--text-secondary)] group-hover:text-[var(--primary-color)]"
                       )}>
-                        <FileText className="w-5 h-5" />
+                        <FileText className="h-6 w-6" />
                       </div>
-                      <div>
-                        <p className={cn("font-semibold text-base mb-1", selectedQuestionnaire?.id === q.id ? "text-[var(--primary-color)]" : "text-[var(--text-primary)]")}>{q.title}</p>
-                        <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-                          <span className={cn("px-2 py-0.5 rounded-md", q.status === "completed" ? "bg-[var(--success-color)]/10 text-[var(--success-color)]" : "bg-[var(--warning-color)]/10 text-[var(--warning-color)]")}>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className={cn("text-[15px] font-semibold leading-tight truncate", selectedQuestionnaire?.id === q.id ? "text-[var(--primary-color)]" : "text-[var(--text-primary)]")}>
+                            {q.title}
+                          </h4>
+                          {selectedQuestionnaire?.id === q.id && (
+                            <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--primary-color)]" />
+                          )}
+                        </div>
+                        {q.details && (
+                          <p className="line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{q.details}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-4 mt-1">
+                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+                            <HelpCircle className="h-3.5 w-3.5" />
+                            <span>{q.number_of_questions} Questions</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>{new Date(q.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                          </div>
+                          <span className={cn("px-2 py-0.5 rounded-md text-[11px] font-medium", q.status === "completed" ? "bg-[var(--success-color)]/10 text-[var(--success-color)]" : "bg-[var(--warning-color)]/10 text-[var(--warning-color)]")}>
                             {q.status === "completed" ? "Published" : "Draft"}
                           </span>
-                          <span>•</span>
-                          <span>{new Date(q.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
-                    <div className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                      selectedQuestionnaire?.id === q.id ? "border-[var(--primary-color)]" : "border-[var(--text-muted)] group-hover:border-[var(--primary-color)]"
-                    )}>
-                      {selectedQuestionnaire?.id === q.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary-color)]" />}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-[var(--header-floating-border)] rounded-[var(--radius-md)] p-10 text-center bg-background/50">
-                <div className="bg-[var(--surface-2)] p-4 rounded-full mb-4 text-[var(--text-muted)]">
-                  <Search className="w-6 h-6" />
+                  ))}
                 </div>
-                <h3 className="font-semibold text-[var(--text-primary)] mb-2">No Questionnaires Found</h3>
-                <p className="text-sm text-[var(--text-secondary)] mb-6 max-w-[280px]">You need to create a questionnaire before you can schedule an interview.</p>
-                <Button className="h-10 rounded-xl px-5 bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white shadow-sm" onClick={() => { setIsSelectQuestionnaireOpen(false); router.push("/questionnaires"); }}>
-                  Create Questionnaire
-                </Button>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {filteredQuestionnaires.length > 0 && (
+              <div className="shrink-0 border-t border-[var(--header-floating-border)] px-6 py-4 flex items-center justify-between gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {Math.min((questPage - 1) * questPageSize + 1, filteredQuestionnaires.length)}–{Math.min(questPage * questPageSize, filteredQuestionnaires.length)} of {filteredQuestionnaires.length} questionnaires
+                </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="hidden sm:inline">Rows per page:</span>
+                    <select
+                      value={questPageSize}
+                      onChange={(e) => { setQuestPageSize(Number(e.target.value)); setQuestPage(1); }}
+                      className="h-8 rounded-lg border border-[var(--header-floating-border)] bg-background px-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary-color)]"
+                    >
+                      {[5, 10, 20, 50].map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 rounded-lg p-0"
+                      disabled={questPage <= 1}
+                      onClick={() => setQuestPage((p) => Math.max(1, p - 1))}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm text-muted-foreground px-2">{questPage} / {questTotalPages}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 rounded-lg p-0"
+                      disabled={questPage >= questTotalPages}
+                      onClick={() => setQuestPage((p) => Math.min(questTotalPages, p + 1))}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-          <DialogFooter className="border-t border-[var(--header-floating-border)] bg-transparent">
-            <Button type="button" variant="outline" className="h-10 rounded-xl px-6 border-[var(--header-floating-border)] bg-background text-[var(--text-primary)] hover:bg-[var(--surface-2)]" onClick={() => setIsSelectQuestionnaireOpen(false)}>Close</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
