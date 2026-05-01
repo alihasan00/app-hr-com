@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import {
@@ -49,6 +49,14 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageInner />
+    </Suspense>
+  );
+}
+
+function RegisterPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get("invite_token") ?? "";

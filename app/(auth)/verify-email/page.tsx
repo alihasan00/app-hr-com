@@ -22,7 +22,6 @@ import {
   authSubmitButtonClassName,
   authSignInLinkClassName,
   authSignInTextClassName,
-  authSuspenseFallbackClassName,
 } from "@/app/(auth)/auth-tokens";
 import AuthFooter from "@/app/(auth)/components/AuthFooter";
 import { AuthInputField } from "@/app/(auth)/components/AuthInputField";
@@ -129,15 +128,7 @@ export default function VerifyEmailPage() {
   };
 
   if (!stepOk) {
-    return (
-      <div className={authSuspenseFallbackClassName}>
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary-color)] border-t-transparent"
-          role="status"
-          aria-label="Loading"
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

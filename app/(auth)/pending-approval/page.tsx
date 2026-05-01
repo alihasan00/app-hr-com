@@ -13,7 +13,6 @@ import {
   authCardSubtitleClassName,
   authCardTitleClassName,
   authSubmitButtonClassName,
-  authSuspenseFallbackClassName,
 } from "@/app/(auth)/auth-tokens";
 import AuthFooter from "@/app/(auth)/components/AuthFooter";
 import AuthLeftPanel from "@/app/(auth)/components/AuthLeftPanel";
@@ -47,15 +46,7 @@ export default function PendingApprovalPage() {
   };
 
   if (!stepOk) {
-    return (
-      <div className={authSuspenseFallbackClassName}>
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary-color)] border-t-transparent"
-          role="status"
-          aria-label="Loading"
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

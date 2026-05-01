@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   Building2,
   CheckCircle2,
-  Loader2,
   LogIn,
   UserPlus,
 } from "lucide-react";
@@ -83,16 +82,7 @@ export function AcceptInvitePage() {
   }
 
   if (previewQuery.isLoading || !isReady) {
-    return (
-      <Shell>
-        <div className="flex flex-col items-center gap-4 py-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[var(--primary-color)]" />
-          <p className="text-[14px] text-[var(--text-secondary)]">
-            Checking your invitation…
-          </p>
-        </div>
-      </Shell>
-    );
+    return null;
   }
 
   if (previewQuery.isError || !previewQuery.data?.data) {

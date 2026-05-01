@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   Clock,
-  Loader2,
   Mail,
   MoreHorizontal,
   Plus,
@@ -221,11 +220,7 @@ export function MembersPanel() {
   const invitationCount = invitations.length;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-[var(--text-secondary)]" />
-      </div>
-    );
+    return null;
   }
 
   return (

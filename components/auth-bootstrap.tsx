@@ -7,6 +7,7 @@ import { AUTH_API_PATHS } from "@/lib/api/auth-endpoints";
 import type { ApiEnvelope, AuthMeUser } from "@/lib/auth/types";
 import { getPublicApiBaseUrl } from "@/lib/config/env";
 import { useAuthStore } from "@/lib/store/auth.store";
+import { useLoaderStore } from "@/stores/loader-store";
 
 /**
  * Bare client used ONLY for the boot probe. We deliberately skip the shared
@@ -37,6 +38,8 @@ export function AuthBootstrap() {
     hasBooted.current = true;
 
     let cancelled = false;
+    const loader = useLoaderStore.getState();
+    loader.show();
     (async () => {
       try {
         const { data: envelope } = await probe.get<ApiEnvelope<AuthMeUser>>(
@@ -47,6 +50,7 @@ export function AuthBootstrap() {
       } catch {
         if (!cancelled) setUser(null);
       } finally {
+        loader.hide();
         if (!cancelled) setReady(true);
       }
     })();
