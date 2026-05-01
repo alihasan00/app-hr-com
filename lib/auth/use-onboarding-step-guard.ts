@@ -37,7 +37,7 @@ export function useOnboardingStepGuard(step: OnboardingStepName): boolean {
         router.replace("/verify-email");
         return;
       }
-      if (user.company_profile_completed) {
+      if (user.company_profile_completed && user.org_id) {
         router.replace(getFirstIncompleteOnboardingPath(user) ?? "/interviews");
       }
     } else {
@@ -58,7 +58,11 @@ export function useOnboardingStepGuard(step: OnboardingStepName): boolean {
   if (!isReady || !user) return false;
 
   if (step === "verify") return !user.email_verified;
-  if (step === "setup") return user.email_verified && !user.company_profile_completed;
+  if (step === "setup")
+    return (
+      user.email_verified &&
+      (!user.company_profile_completed || !user.org_id)
+    );
   // "pending"
   return (
     user.email_verified && user.company_profile_completed && !user.account_approved

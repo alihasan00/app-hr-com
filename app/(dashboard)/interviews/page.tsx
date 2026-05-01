@@ -20,6 +20,8 @@ import { useMemo, useState, Suspense } from "react";
 import { FloatingBtn } from "@/components/floating-btn";
 import { interviewsApi, type InterviewListItem } from "@/lib/api/interviews";
 import { useInterviewsStore, type ViewMode } from "@/stores/interviews-store";
+import { useAuthStore } from "@/lib/store/auth.store";
+import { canManageContent } from "@/lib/orgs/permissions";
 import { cn } from "@/lib/ui/cn";
 import { formatStatusLabel } from "@/lib/ui/format-status-label";
 import { Input } from "@/components/ui/input";
@@ -96,6 +98,9 @@ function InterviewsDashboard() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const currentOrgRole = useAuthStore((s) => s.user?.current_org_role);
+  const canManage = canManageContent(currentOrgRole);
   
   const targetClasses = 'rounded-[var(--radius-md)] border border-[var(--header-floating-border)] bg-[var(--header-floating-bg)] shadow-[0_4px_32px_rgba(var(--shadow-rgb),0.09),0_1px_4px_rgba(var(--shadow-rgb),0.05)] transition-[border-color,box-shadow,transform] duration-300 hover:border-[rgba(var(--primary-color-rgb),0.28)] hover:shadow-[0_20px_40px_rgba(var(--shadow-rgb),0.08)] dark:hover:border-[rgba(var(--accent-violet-rgb),0.35)]';
   const pillClasses = "inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--primary-color-rgb),0.15)] bg-gradient-to-br from-[rgba(var(--primary-color-rgb),0.08)] to-[rgba(var(--primary-color-rgb),0.04)] px-3.5 py-2 backdrop-blur-md transition-all duration-200 hover:-translate-y-[1px] hover:border-[rgba(var(--primary-color-rgb),0.25)] hover:from-[rgba(var(--primary-color-rgb),0.12)] hover:to-[rgba(var(--primary-color-rgb),0.06)] hover:shadow-[0_4px_12px_rgba(var(--primary-color-rgb),0.15)]";
@@ -370,7 +375,7 @@ function InterviewsDashboard() {
                       <div className="hidden items-center justify-center px-2 md:flex relative">
                         {isLoading ? (
                           <div className="h-8 w-8 rounded-xl bg-[var(--border-color-light)]" />
-                        ) : (
+                        ) : canManage ? (
                           <>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -386,7 +391,7 @@ function InterviewsDashboard() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </>
-                        )}
+                        ) : null}
                       </div>
 
                       {/* Mobile Only: Inline stats & actions */}
@@ -404,19 +409,21 @@ function InterviewsDashboard() {
                                 {item!.scheduled_date ? format(new Date(item!.scheduled_date), "MMM d") : "N/A"}
                               </div>
                             </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button onClick={(e) => e.stopPropagation()} className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                  <MoreVertical className="h-4 w-4" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-32 rounded-[6px]" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(item!); }} className="text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20">
-                                  <Trash className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {canManage && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button onClick={(e) => e.stopPropagation()} className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-32 rounded-[6px]" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(item!); }} className="text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20">
+                                    <Trash className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </>
                         )}
                       </div>
@@ -456,19 +463,21 @@ function InterviewsDashboard() {
                           <h3 className="line-clamp-1 text-base font-bold text-[var(--text-primary)] transition-colors group-hover:text-[var(--text-accent-color)]">
                             {item!.questionnaire_title}
                           </h3>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button onClick={(e) => e.stopPropagation()} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                <MoreVertical className="h-4 w-4" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-32 rounded-[6px]" onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(item!); }} className="text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20">
-                                <Trash className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {canManage && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button onClick={(e) => e.stopPropagation()} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                  <MoreVertical className="h-4 w-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-32 rounded-[6px]" onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(item!); }} className="text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20">
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </div>
 
                         <div className="mt-auto flex flex-col gap-2.5 pt-4">
@@ -565,7 +574,7 @@ function InterviewsDashboard() {
         ) : null}
       </div>
 
-      <FloatingBtn text="New Interview" onClick={handleCreateNew} />
+      {canManage && <FloatingBtn text="New Interview" onClick={handleCreateNew} />}
 
       <DeleteInterviewModal
         isOpen={isDeleteModalOpen}

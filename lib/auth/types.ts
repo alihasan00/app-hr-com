@@ -3,6 +3,8 @@
  * the client only tracks the user profile in-memory.
  */
 
+export type OrgRole = "owner" | "admin" | "member";
+
 export type AuthUser = {
   id: string;
   email: string;
@@ -16,6 +18,8 @@ export type AuthUser = {
   company_website: string | null;
   intended_use: string | null;
   avatar_url: string | null;
+  org_id: string | null;
+  current_org_role: OrgRole | null;
 };
 
 export type AuthMeUser = AuthUser;

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { LogOut, Moon, Plus, Sun, User as UserIcon } from "lucide-react";
+import { Building2, LogOut, Moon, Plus, Sun, User as UserIcon } from "lucide-react";
 
 import { cn } from "@/lib/ui/cn";
 import { SITE_LOGO } from "@/lib/site/marketing-site";
@@ -182,10 +182,16 @@ export function DashboardNav({ onCreateNew }: DashboardNavProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem onClick={() => setProfileOpen(true)}>
                 <UserIcon className="mr-2 h-4 w-4" />
                 Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization" className="cursor-pointer">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Organization
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

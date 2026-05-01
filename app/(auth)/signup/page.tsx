@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import {
@@ -38,7 +38,7 @@ import { AuthPasswordField } from "@/app/(auth)/components/AuthPasswordField";
 import { AuthWordmark } from "@/app/(auth)/components/AuthWordmark";
 import PasswordStrengthBar from "@/app/(auth)/components/PasswordStrengthBar";
 import { registerSchema, type RegisterFormValues } from "@/lib/auth/auth-schemas";
-import { authApi, parseApiError, parseFieldErrors } from "@/lib/api";
+import { authApi, orgsApi, parseApiError, parseFieldErrors } from "@/lib/api";
 import { useRedirectIfAuthenticatedWithOnboarding } from "@/lib/auth/use-redirect-if-authenticated-with-onboarding";
 import { cn } from "@/lib/ui/cn";
 import { useAuthStore } from "@/lib/store";
@@ -50,6 +50,9 @@ function FieldError({ message }: { message?: string }) {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite_token") ?? "";
+  const invitedEmail = searchParams.get("email") ?? "";
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -57,18 +60,25 @@ export default function RegisterPage() {
     control,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       first_name: "",
       last_name: "",
-      email: "",
+      email: invitedEmail,
       password: "",
       confirm_password: "",
       terms: false,
     },
   });
+
+  useEffect(() => {
+    if (invitedEmail) {
+      setValue("email", invitedEmail);
+    }
+  }, [invitedEmail, setValue]);
 
   const password = useWatch({ control, name: "password", defaultValue: "" }) ?? "";
 
@@ -77,8 +87,25 @@ export default function RegisterPage() {
   useRedirectIfAuthenticatedWithOnboarding();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (values: RegisterFormValues) => {
-      return authApi.signup(values.first_name, values.last_name, values.email, values.password);
+    mutationFn: async (values: RegisterFormValues) => {
+      const signupResponse = await authApi.signup(
+        values.first_name,
+        values.last_name,
+        values.email,
+        values.password,
+      );
+      if (inviteToken && signupResponse.data?.user) {
+        try {
+          await orgsApi.acceptInvitation(inviteToken);
+          const refreshed = await authApi.getMe();
+          if (refreshed.data) {
+            signupResponse.data.user = refreshed.data;
+          }
+        } catch {
+          /* non-fatal — user can land on normal onboarding */
+        }
+      }
+      return signupResponse;
     },
     onSuccess: (response) => {
       const user = response.data?.user;

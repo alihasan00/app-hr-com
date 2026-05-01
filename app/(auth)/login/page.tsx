@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -37,7 +37,7 @@ import {
 import { AuthPasswordField } from "@/app/(auth)/components/AuthPasswordField";
 import { AuthWordmark } from "@/app/(auth)/components/AuthWordmark";
 import { loginSchema, type LoginFormValues } from "@/lib/auth/auth-schemas";
-import { authApi, parseApiError, parseFieldErrors } from "@/lib/api";
+import { authApi, orgsApi, parseApiError, parseFieldErrors } from "@/lib/api";
 import { useRedirectIfAuthenticatedWithOnboarding } from "@/lib/auth/use-redirect-if-authenticated-with-onboarding";
 import { getFirstIncompleteOnboardingPath } from "@/lib/auth/onboarding";
 import { useAuthStore } from "@/lib/store";
@@ -50,6 +50,8 @@ function FieldError({ message }: { message?: string }) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite_token") ?? "";
   const setSession = useAuthStore((s) => s.setSession);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -67,8 +69,19 @@ export default function LoginPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: LoginPayload) => {
-      // Login sets httpOnly auth cookies; the envelope carries the user profile.
-      return authApi.login(payload.email, payload.password);
+      const loginRes = await authApi.login(payload.email, payload.password);
+      if (inviteToken && loginRes.data?.user) {
+        try {
+          await orgsApi.acceptInvitation(inviteToken);
+          const refreshed = await authApi.getMe();
+          if (refreshed.data) {
+            loginRes.data.user = refreshed.data;
+          }
+        } catch {
+          /* non-fatal — email mismatch or expired token */
+        }
+      }
+      return loginRes;
     },
     onSuccess: (loginRes) => {
       const user = loginRes.data?.user;

@@ -57,6 +57,7 @@ import {
   workDemandToLabel,
   workLabelToValue,
 } from "@/lib/questionnaires/map-create-payload";
+import { useAuthStore } from "@/lib/store/auth.store";
 
 import { HelpDialog, type HelpTopic } from "./help-dialog";
 
@@ -76,7 +77,12 @@ const STEPS = [
   { id: 5, title: "Review", icon: Gauge },
 ];
 
-const DRAFT_STORAGE_KEY = "questionnaire-draft";
+const DRAFT_STORAGE_KEY_PREFIX = "questionnaire-draft";
+
+function draftKey(userId: string | null | undefined): string | null {
+  if (!userId) return null;
+  return `${DRAFT_STORAGE_KEY_PREFIX}:${userId}`;
+}
 
 const INITIAL_ROLE_INFO: CreateQuestionnaireModalState["roleInfo"] = {
   roleName: "",
@@ -145,10 +151,10 @@ type DraftShape = {
   completedSteps?: number[];
 };
 
-function readDraft(): DraftShape | null {
-  if (typeof window === "undefined") return null;
+function readDraft(key: string | null): DraftShape | null {
+  if (!key || typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     return JSON.parse(raw) as DraftShape;
   } catch {
@@ -156,19 +162,19 @@ function readDraft(): DraftShape | null {
   }
 }
 
-function writeDraft(value: object) {
-  if (typeof window === "undefined") return;
+function writeDraft(key: string | null, value: object) {
+  if (!key || typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(value));
+    window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
     /* quota or disabled */
   }
 }
 
-function clearDraft() {
-  if (typeof window === "undefined") return;
+function clearDraft(key: string | null) {
+  if (!key || typeof window === "undefined") return;
   try {
-    window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    window.localStorage.removeItem(key);
   } catch {
     /* ignore */
   }
@@ -296,6 +302,9 @@ export function CreateQuestionnaireModal({
   onSubmit,
   isSubmitting,
 }: CreateQuestionnaireModalProps) {
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+  const storageKey = useMemo(() => draftKey(userId), [userId]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
@@ -314,7 +323,7 @@ export function CreateQuestionnaireModal({
   useEffect(() => {
     if (!isOpen || hydratedOnceRef.current) return;
     hydratedOnceRef.current = true;
-    const draft = readDraft();
+    const draft = readDraft(storageKey);
     if (!draft) return;
     const next = applyDraftToState(draft);
     setRoleInfo(next.roleInfo);
@@ -331,6 +340,7 @@ export function CreateQuestionnaireModal({
     if (!isOpen) return;
     const handle = setTimeout(() => {
       writeDraft(
+        storageKey,
         toDraftShape({
           roleInfo,
           workDemands,
@@ -343,7 +353,7 @@ export function CreateQuestionnaireModal({
       );
     }, 300);
     return () => clearTimeout(handle);
-  }, [isOpen, roleInfo, workDemands, competencies, culture, performance, currentStep, completedSteps]);
+  }, [isOpen, storageKey, roleInfo, workDemands, competencies, culture, performance, currentStep, completedSteps]);
 
   const roleInfoErrors = useMemo(() => {
     const errs: Partial<Record<keyof CreateQuestionnaireModalState["roleInfo"], string>> = {};
@@ -447,6 +457,7 @@ export function CreateQuestionnaireModal({
 
   const handleSaveDraftAndClose = () => {
     writeDraft(
+      storageKey,
       toDraftShape({
         roleInfo,
         workDemands,
@@ -462,7 +473,7 @@ export function CreateQuestionnaireModal({
   };
 
   const handleDiscardAndClose = () => {
-    clearDraft();
+    clearDraft(storageKey);
     setShowCloseConfirm(false);
     resetState();
     onClose();
@@ -472,7 +483,7 @@ export function CreateQuestionnaireModal({
     if (hasAnyData()) {
       setShowCloseConfirm(true);
     } else {
-      clearDraft();
+      clearDraft(storageKey);
       onClose();
     }
   };
@@ -495,7 +506,7 @@ export function CreateQuestionnaireModal({
       return;
     }
     onSubmit({ roleInfo, workDemands, competencies, culture, performance });
-    clearDraft();
+    clearDraft(storageKey);
     resetState();
   };
 
