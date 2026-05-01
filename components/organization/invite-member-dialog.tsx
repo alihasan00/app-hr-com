@@ -2,12 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { Check, ShieldCheck, UserRound } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { orgsApi, parseApiError } from "@/lib/api";
 import { inviteMemberSchema, type InviteMemberFormValues } from "@/lib/orgs/schemas";
 import type { InviteRole } from "@/lib/orgs/types";
+import { cn } from "@/lib/ui/cn";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,13 +22,39 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+type RoleOption = {
+  value: InviteRole;
+  title: string;
+  tagline: string;
+  icon: typeof UserRound;
+  details: string[];
+};
+
+const ROLE_OPTIONS: RoleOption[] = [
+  {
+    value: "member",
+    title: "Member",
+    tagline: "View-only collaborator",
+    icon: UserRound,
+    details: [
+      "Browse interviews and candidate reports",
+      "See questionnaires the team has built",
+      "Cannot create, edit, or delete content",
+    ],
+  },
+  {
+    value: "admin",
+    title: "Admin",
+    tagline: "Full team manager",
+    icon: ShieldCheck,
+    details: [
+      "Create, edit, and delete interviews & questionnaires",
+      "Invite teammates and change their roles",
+      "Update organization details and branding",
+    ],
+  },
+];
 
 export function InviteMemberDialog({
   open,
@@ -74,7 +102,7 @@ export function InviteMemberDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>Invite a teammate</DialogTitle>
           <DialogDescription>
@@ -112,18 +140,20 @@ export function InviteMemberDialog({
               control={form.control}
               name="role"
               render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={(v) => field.onChange(v as InviteRole)}
+                <div
+                  role="radiogroup"
+                  aria-label="Role"
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-2"
                 >
-                  <SelectTrigger className="h-11 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="member">Member — view access only</SelectItem>
-                    <SelectItem value="admin">Admin — manage org + members</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {ROLE_OPTIONS.map((option) => (
+                    <RoleCard
+                      key={option.value}
+                      option={option}
+                      selected={field.value === option.value}
+                      onSelect={() => field.onChange(option.value)}
+                    />
+                  ))}
+                </div>
               )}
             />
             {form.formState.errors.role && (
@@ -149,5 +179,85 @@ export function InviteMemberDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RoleCard({
+  option,
+  selected,
+  onSelect,
+}: {
+  option: RoleOption;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const Icon = option.icon;
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={cn(
+        "group relative flex h-full flex-col gap-3 overflow-hidden rounded-[var(--radius-md)] p-4 text-left",
+        "border backdrop-blur-[20px] backdrop-saturate-[180%] transition-all duration-200",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+        selected
+          ? "border-[var(--glass-border-dark)] bg-gradient-to-br from-[var(--glass-primary-overlay-medium)] to-[var(--glass-primary-overlay)] shadow-[0_8px_24px_-12px_rgba(var(--primary-color-rgb),0.35)]"
+          : "border-[var(--glass-border-light)] bg-[var(--glass-bg-light)] hover:border-[var(--glass-border-medium)] hover:bg-gradient-to-br hover:from-[var(--glass-primary-overlay)] hover:to-[var(--glass-primary-overlay-light)]",
+      )}
+    >
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--glass-white-overlay-dark)] to-transparent" />
+
+      <div className="flex items-start justify-between gap-2">
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] transition-colors",
+            selected
+              ? "bg-[rgba(var(--primary-color-rgb),0.15)] text-[var(--primary-color)]"
+              : "bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] text-[var(--text-secondary)] group-hover:text-[var(--primary-color)]",
+          )}
+        >
+          <Icon className="h-5 w-5" strokeWidth={2} />
+        </div>
+        <span
+          aria-hidden
+          className={cn(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all",
+            selected
+              ? "border-[var(--primary-color)] bg-[var(--primary-color)] text-white"
+              : "border-[color-mix(in_srgb,var(--foreground)_18%,transparent)] bg-transparent text-transparent",
+          )}
+        >
+          <Check className="h-3 w-3" strokeWidth={3.5} />
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-0.5">
+        <div className="text-[14px] font-semibold text-[var(--text-heading)]">
+          {option.title}
+        </div>
+        <div className="text-[12px] text-[var(--text-secondary)]">
+          {option.tagline}
+        </div>
+      </div>
+
+      <ul className="flex flex-col gap-1.5 text-[12px] leading-[1.45] text-[var(--text-secondary)]">
+        {option.details.map((detail) => (
+          <li key={detail} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className={cn(
+                "mt-[6px] h-1 w-1 shrink-0 rounded-full transition-colors",
+                selected
+                  ? "bg-[var(--primary-color)]"
+                  : "bg-[color-mix(in_srgb,var(--foreground)_25%,transparent)]",
+              )}
+            />
+            <span>{detail}</span>
+          </li>
+        ))}
+      </ul>
+    </button>
   );
 }
