@@ -22,7 +22,24 @@ const REFRESH_COOKIE = "rch_refresh";
  */
 const PROTECTED_PREFIXES = ["/interviews", "/questionnaires", "/reports"];
 
+/**
+ * Route-group folders like `(candidate)` are invisible in URLs, so the public
+ * candidate agent pages collide with the dashboard's `/interviews/*` namespace.
+ * Allow-list those URLs explicitly.
+ */
+const PUBLIC_CANDIDATE_PREFIXES = [
+  "/interviews/agent",
+  "/interviews/vapi-agent",
+];
+
 function isProtected(pathname: string): boolean {
+  if (
+    PUBLIC_CANDIDATE_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    )
+  ) {
+    return false;
+  }
   return PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );

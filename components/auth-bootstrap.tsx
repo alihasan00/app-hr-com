@@ -1,6 +1,7 @@
 "use client";
 
 import axios from "axios";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { AUTH_API_PATHS } from "@/lib/api/auth-endpoints";
@@ -9,6 +10,11 @@ import type { ApiEnvelope, AuthEnvelopeData, AuthMeUser } from "@/lib/auth/types
 import { getPublicApiBaseUrl } from "@/lib/config/env";
 import { useAuthStore } from "@/lib/store/auth.store";
 import { useLoaderStore } from "@/stores/loader-store";
+
+// Public candidate routes — share links, live interview page. Never
+// authenticated, so skip the boot probe to avoid a pointless 401 round-trip
+// (and, for the live agent page, unnecessary latency before the WS opens).
+const PUBLIC_CANDIDATE_PREFIXES = ["/interviews/agent", "/interviews/vapi-agent"];
 
 /**
  * Bare client used ONLY for the boot probe. We deliberately skip the shared
@@ -48,10 +54,20 @@ export function AuthBootstrap() {
   const setUser = useAuthStore((s) => s.setUser);
   const setReady = useAuthStore((s) => s.setReady);
   const hasBooted = useRef(false);
+  const pathname = usePathname();
+  const isPublicCandidateRoute = PUBLIC_CANDIDATE_PREFIXES.some((p) =>
+    pathname?.startsWith(p),
+  );
 
   useEffect(() => {
     if (hasBooted.current) return;
     hasBooted.current = true;
+
+    if (isPublicCandidateRoute) {
+      setUser(null);
+      setReady(true);
+      return;
+    }
 
     let cancelled = false;
     const loader = useLoaderStore.getState();
@@ -85,7 +101,7 @@ export function AuthBootstrap() {
     return () => {
       cancelled = true;
     };
-  }, [setUser, setReady]);
+  }, [setUser, setReady, isPublicCandidateRoute]);
 
   return null;
 }
