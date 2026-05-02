@@ -20,13 +20,22 @@ export interface GeminiTranscriptEntry {
   receivedAt: number;
 }
 
+export interface GeminiEndedInfo {
+  /** Server-provided reason (e.g. "agent_ended", "timeout") if any. */
+  reason: string | null;
+  /** WebSocket close code — useful for distinguishing tab-close vs network drop. */
+  code?: number;
+  /** Optional close reason string from the ws frame. */
+  closeReason?: string;
+}
+
 export interface UseGeminiInterviewOptions {
   /** Absolute or relative WS URL returned by the `bootstrap` endpoint. */
   wsUrl: string | null;
   /** Only allow `start()` once the backend says the candidate can start. */
   canStart: boolean;
   /** Fired once per connection lifecycle; server provides the reason. */
-  onEnded?: (reason: string | null) => void;
+  onEnded?: (info: GeminiEndedInfo) => void;
   /** Fired on unrecoverable errors. */
   onError?: (error: Error) => void;
 }
@@ -185,10 +194,14 @@ export function useGeminiInterview(
       onErrorRef.current?.(new Error("WebSocket error"));
     };
 
-    ws.onclose = () => {
+    ws.onclose = (evt) => {
       if (!endedHandledRef.current) {
         endedHandledRef.current = true;
-        onEndedRef.current?.(null);
+        onEndedRef.current?.({
+          reason: null,
+          code: evt.code,
+          closeReason: evt.reason,
+        });
       }
       setStatus("ended");
       setAgentState(null);
@@ -231,7 +244,7 @@ export function useGeminiInterview(
         case "ended":
           if (!endedHandledRef.current) {
             endedHandledRef.current = true;
-            onEndedRef.current?.(msg.reason ?? null);
+            onEndedRef.current?.({ reason: msg.reason ?? null });
           }
           setStatus("ended");
           setAgentState(null);

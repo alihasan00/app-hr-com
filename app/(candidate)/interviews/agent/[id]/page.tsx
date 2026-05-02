@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/ui/cn";
 import { interviewsGeminiApi, type GeminiBootstrapData } from "@/lib/api/interviewsGemini";
-import { useGeminiInterview, type GeminiAgentState } from "@/lib/gemini-live/useGeminiInterview";
+import {
+  useGeminiInterview,
+  type GeminiAgentState,
+  type GeminiEndedInfo,
+} from "@/lib/gemini-live/useGeminiInterview";
 
 function mapOrbState(state: GeminiAgentState): "talking" | "listening" | "thinking" | null {
   switch (state) {
@@ -46,6 +50,7 @@ export default function GeminiVoiceAgentPage({ params }: AgentPageProps) {
   const [countdownText, setCountdownText] = useState("");
   const [isFutureDate, setIsFutureDate] = useState(false);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["gemini-agent-data", candidateId],
@@ -67,15 +72,52 @@ export default function GeminiVoiceAgentPage({ params }: AgentPageProps) {
     toast.error("Voice Agent Error", { description: err.message });
   }, []);
 
+  const handleEnded = useCallback((info: GeminiEndedInfo) => {
+    // Surface close context to the browser console so post-mortems on
+    // "interview cut short" reports can distinguish user-initiated close
+    // (1000/1001) from network drop (1006) from server-side close.
+    // eslint-disable-next-line no-console
+    console.info("[interview] session ended", info);
+  }, []);
+
   const { status: connectionStatus, agentState, start, stop } = useGeminiInterview({
     wsUrl: data?.ws_url ?? null,
     canStart: Boolean(data?.can_start),
     onError: handleError,
+    onEnded: handleEnded,
   });
 
   const isConnecting = connectionStatus === "connecting";
   const isConnected = connectionStatus === "connected";
   const hasEnded = connectionStatus === "ended";
+
+  // Elapsed timer — starts ticking the moment the WS connects, freezes when
+  // the interview ends so the candidate can see the final duration.
+  useEffect(() => {
+    if (!isConnected) return;
+    const startedAt = Date.now();
+    setElapsedSeconds(0);
+    const id = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isConnected]);
+
+  const elapsedText = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:${String(elapsedSeconds % 60).padStart(2, "0")}`;
+
+  // Guard against accidental tab close / reload / back-nav mid-interview.
+  // The browser will show its generic "Leave site?" prompt; we can't
+  // customize the text in modern browsers, but any prompt is better than
+  // a silent disconnect that ends the session.
+  useEffect(() => {
+    if (!isConnected) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isConnected]);
 
   // Countdown until scheduled start (same behaviour as the Vapi page).
   useEffect(() => {
@@ -242,25 +284,30 @@ export default function GeminiVoiceAgentPage({ params }: AgentPageProps) {
           )}
 
           {/* Status indicator — fixed height so layout doesn't jump when it appears */}
-          <div className="h-6 mt-3 flex items-center">
+          <div className="h-6 mt-3 flex items-center justify-center gap-3">
             {isConnected && (
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground animate-in fade-in slide-in-from-bottom-2">
-                <div
-                  className={cn(
-                    "w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]",
-                    agentState === "speaking"
-                      ? "bg-[var(--primary-color)] text-[var(--primary-color)] animate-pulse"
-                      : agentState === "listening"
-                        ? "bg-[var(--success-color)] text-[var(--success-color)]"
-                        : "bg-[var(--warning-color)] text-[var(--warning-color)]",
-                  )}
-                />
-                {agentState === "speaking"
-                  ? "Agent is speaking…"
-                  : agentState === "listening"
-                    ? "Listening…"
-                    : "Thinking…"}
-              </div>
+              <>
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground animate-in fade-in slide-in-from-bottom-2">
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]",
+                      agentState === "speaking"
+                        ? "bg-[var(--primary-color)] text-[var(--primary-color)] animate-pulse"
+                        : agentState === "listening"
+                          ? "bg-[var(--success-color)] text-[var(--success-color)]"
+                          : "bg-[var(--warning-color)] text-[var(--warning-color)]",
+                    )}
+                  />
+                  {agentState === "speaking"
+                    ? "Agent is speaking…"
+                    : agentState === "listening"
+                      ? "Listening…"
+                      : "Thinking…"}
+                </div>
+                <span className="text-xs font-semibold text-muted-foreground tabular-nums animate-in fade-in">
+                  {elapsedText}
+                </span>
+              </>
             )}
           </div>
         </div>
