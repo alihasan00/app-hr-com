@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { getPublicApiBaseUrl } from "@/lib/config/env";
 import { createGeminiAudioController, type GeminiAudioController } from "./audio";
 
 export type GeminiAgentState =
@@ -40,12 +39,12 @@ export interface UseGeminiInterviewReturn {
   stop: () => Promise<void>;
 }
 
+// The backend `bootstrap` endpoint always returns an absolute `ws://…` /
+// `wss://…` URL with scheme + host resolved server-side (via the
+// `GEMINI_WS_PUBLIC_URL` setting or `X-Forwarded-Proto` headers). We trust
+// it verbatim and reject anything that isn't absolute.
 function resolveWsUrl(raw: string | null): string | null {
-  if (!raw) return null;
-  if (/^wss?:\/\//i.test(raw)) return raw;
-  const base = getPublicApiBaseUrl();
-  const wsBase = base.replace(/^http(s?):\/\//i, (_m, s) => (s === "s" ? "wss://" : "ws://"));
-  return `${wsBase}${raw.startsWith("/") ? "" : "/"}${raw}`;
+  return raw && /^wss?:\/\//i.test(raw) ? raw : null;
 }
 
 /**
