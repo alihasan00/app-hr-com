@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/config/cookies";
+
 /**
  * Server-side auth gate. The FastAPI backend stores the session in a pair of
- * httpOnly cookies (`rch_access` for short-lived JWT, `rch_refresh` for the
- * rotating refresh token). We only check *presence* here — verification lives
- * on the API — but that's enough to prevent a flash of protected content for
+ * httpOnly cookies. We only check *presence* here — verification lives on the
+ * API — but that's enough to prevent a flash of protected content for
  * unauthenticated users.
- *
- * Cookie names must stay in sync with `fastapi-hr-io/app/core/config.py`
- * (`COOKIE_NAME` / `REFRESH_COOKIE_NAME`).
  */
-
-const ACCESS_COOKIE = "rch_access";
-const REFRESH_COOKIE = "rch_refresh";
 
 /**
  * Only the `(dashboard)` route group is gated. The singular `/interview` and

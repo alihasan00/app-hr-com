@@ -4,9 +4,16 @@ import { use, useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mic, PhoneOff, AlertCircle, CheckCircle2, CalendarClock } from "lucide-react";
 import Vapi from "@vapi-ai/web";
+import type { AssistantOverrides } from "@vapi-ai/web/dist/api";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 
-import { Orb as NewOrb } from "@/components/ui/orb";
+// `Orb` pulls in `three` + `@react-three/fiber` (~1.7 MB). Lazy-load so the
+// three.js chunk is deferred until after hydration.
+const NewOrb = dynamic(
+  () => import("@/components/ui/orb").then((m) => m.Orb),
+  { ssr: false, loading: () => null },
+);
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -219,14 +226,17 @@ export default function WebVoiceAgentPage({ params }: AgentPageProps) {
       setButtonText("Connecting...");
       setOrbAgentState("connecting");
 
-      await vapiRef.current.start(data.assistant_id, {
+      // The SDK types `serverMessages` as a single literal, but the runtime API
+      // accepts an array and we rely on that for `end-of-call-report`. Narrow
+      // the type-cast to just that field instead of the whole overrides object.
+      const overrides: AssistantOverrides = {
         endCallMessage: "Thanks again, take care!",
         endCallPhrases: ["Thanks again, take care!"],
         voicemailMessage:
           "Hey there! This is Sarah from Reechout. We tried to reach you for your scheduled interview. Give us a call back when you can—looking forward to chatting with you!",
         maxDurationSeconds: 1200,
         backgroundSound: "off",
-        serverMessages: ["end-of-call-report"],
+        serverMessages: ["end-of-call-report"] as unknown as AssistantOverrides["serverMessages"],
         artifactPlan: {
           recordingEnabled: true,
         },
@@ -243,8 +253,8 @@ export default function WebVoiceAgentPage({ params }: AgentPageProps) {
         stopSpeakingPlan: {
           numWords: 3,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      };
+      await vapiRef.current.start(data.assistant_id, overrides);
     } catch (err) {
       console.error("Error starting Vapi call:", err);
       setIsConnecting(false);

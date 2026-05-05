@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// Shared password policy. Keep in sync with the backend validator; if the
+// regex changes, grep for `PASSWORD_STRENGTH_REGEX` before tweaking so all
+// signup / invite / reset flows move together.
+export const PASSWORD_STRENGTH_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+export const PASSWORD_STRENGTH_MESSAGE =
+  "Password must contain an uppercase letter, lowercase letter, and number";
+
 export const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
@@ -15,7 +22,7 @@ export const registerSchema = z
     password: z
       .string()
       .min(8, "Use at least 8 characters")
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain an uppercase letter, lowercase letter, and number"),
+      .regex(PASSWORD_STRENGTH_REGEX, PASSWORD_STRENGTH_MESSAGE),
     confirm_password: z.string().min(1, "Confirm your password"),
     terms: z.boolean().refine((v) => v === true, {
       message: "Accept the terms to continue",
@@ -36,10 +43,7 @@ export const invitationSignupSchema = z
     password: z
       .string()
       .min(8, "Use at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain an uppercase letter, lowercase letter, and number",
-      ),
+      .regex(PASSWORD_STRENGTH_REGEX, PASSWORD_STRENGTH_MESSAGE),
     confirm_password: z.string().min(1, "Confirm your password"),
     terms: z.boolean().refine((v) => v === true, {
       message: "Accept the terms to continue",

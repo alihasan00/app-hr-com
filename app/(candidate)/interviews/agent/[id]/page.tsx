@@ -3,9 +3,15 @@
 import { use, useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, CalendarClock, CheckCircle2, Mic, PhoneOff } from "lucide-react";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 
-import { Orb as NewOrb } from "@/components/ui/orb";
+// `Orb` pulls in `three` + `@react-three/fiber` (~1.7 MB). Lazy-load so the
+// three.js chunk is deferred until after hydration.
+const NewOrb = dynamic(
+  () => import("@/components/ui/orb").then((m) => m.Orb),
+  { ssr: false, loading: () => null },
+);
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

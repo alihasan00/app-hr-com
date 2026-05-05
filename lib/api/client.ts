@@ -71,10 +71,27 @@ function isAuthApiPath(url: string | undefined): boolean {
   return url.includes("/auth/") || url.includes("auth/");
 }
 
-const ONBOARDING_ROUTE_PREFIXES = ["/verify-email", "/company-setup", "/pending-approval"];
+import { ONBOARDING_ROUTE_PREFIXES } from "@/lib/auth/onboarding";
 
 function isOnboardingRoute(path: string): boolean {
   return ONBOARDING_ROUTE_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
+}
+
+/**
+ * Accept only same-origin, single-slash paths. Rejects protocol-relative
+ * (`//evil.com`), absolute URLs, and anything with control characters so a
+ * compromised helper can't turn a 403 redirect into an open redirect.
+ */
+function isSafeInternalPath(path: string | null | undefined): path is string {
+  if (!path) return false;
+  if (!path.startsWith("/")) return false;
+  if (path.startsWith("//")) return false;
+  if (path.startsWith("/\\")) return false;
+  for (let i = 0; i < path.length; i++) {
+    const c = path.charCodeAt(i);
+    if (c < 0x20 || c === 0x7f) return false;
+  }
+  return true;
 }
 
 /** After 403 from a protected HR endpoint, sync session and send user to the right onboarding step. */
@@ -95,7 +112,7 @@ function scheduleOnboardingRedirectAfter403(requestUrl: string | undefined) {
         const me = await authApi.getMe();
         useAuthStore.getState().setUser(me.data);
         const next = getFirstIncompleteOnboardingPath(me.data);
-        if (next) {
+        if (isSafeInternalPath(next)) {
           window.location.assign(next);
         }
       } catch {

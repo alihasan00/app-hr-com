@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
+import { sanitizeInviteToken } from "@/lib/auth/invite";
 import {
   authCardClassName,
   authCardHeaderClassName,
@@ -58,7 +59,7 @@ export default function LoginPage() {
 function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const inviteToken = searchParams.get("invite_token") ?? "";
+  const inviteToken = sanitizeInviteToken(searchParams.get("invite_token"));
   const setSession = useAuthStore((s) => s.setSession);
   const [formError, setFormError] = useState<string | null>(null);
 

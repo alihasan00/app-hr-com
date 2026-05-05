@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, Suspense } from "react";
 
 import { FloatingBtn } from "@/components/floating-btn";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { interviewsApi, type InterviewListItem } from "@/lib/api/interviews";
 import { useInterviewsStore, type ViewMode } from "@/stores/interviews-store";
 import { useAuthStore } from "@/lib/store/auth.store";
@@ -43,8 +44,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Modal Components
-import { DeleteInterviewModal } from "./components/delete-interview-modal";
+// Modal Components — lazy-loaded; off the initial render path since they're
+// only shown after the user opens the delete confirmation.
+import dynamic from "next/dynamic";
+const DeleteInterviewModal = dynamic(
+  () => import("./components/delete-interview-modal").then((m) => m.DeleteInterviewModal),
+  { ssr: false },
+);
 
 function FilterDropdown({
   label,
@@ -128,12 +134,14 @@ function InterviewsDashboard() {
     setIsDeleteModalOpen(true);
   };
 
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 200);
+
   const filteredInterviews = useMemo(() => {
     if (!data?.results) return [];
     let results = data.results;
-    
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
+
+    if (debouncedSearchQuery) {
+      const lowerQuery = debouncedSearchQuery.toLowerCase();
       results = results.filter(
         (i) =>
           i.questionnaire_title?.toLowerCase().includes(lowerQuery) ||
@@ -159,7 +167,7 @@ function InterviewsDashboard() {
     }
 
     return results;
-  }, [data?.results, searchQuery, statusFilter, candidatesFilter]);
+  }, [data?.results, debouncedSearchQuery, statusFilter, candidatesFilter]);
 
   const getStatusClasses = (status: InterviewListItem["status"]) => {
     const baseClasses = "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-1.5 text-[12px] font-bold capitalize tracking-wide backdrop-blur-md transition-all duration-200 hover:-translate-y-[1px] shadow-sm";

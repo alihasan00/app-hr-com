@@ -3,12 +3,19 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, Phone, Zap, Target } from "lucide-react";
+import dynamic from "next/dynamic";
 
 import { HOME_CTA, HOME_HERO_BADGE, HOME_HERO_TIP } from "@/app/home-content";
 import { cn } from "@/lib/ui/cn";
 import { PAGE_SHELL_CLASS } from "@/components/page-shell";
 import { PrimaryCtaLink } from "./home/primary-cta-link";
-import { HeroParticleBackground } from "./hero-particle-background";
+
+// three.js (~500 KB) is only needed for the decorative background. Keep it
+// off the critical path: render on the client after hydration, no SSR.
+const HeroParticleBackground = dynamic(
+  () => import("./hero-particle-background").then((m) => m.HeroParticleBackground),
+  { ssr: false, loading: () => null },
+);
 
 const STATS = [
   { v: "1.5K+", l: "Interviews Conducted", i: Phone },

@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 
 import { FloatingBtn } from "@/components/floating-btn";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { questionnairesApi, type Questionnaire } from "@/lib/api/questionnaires";
 import { useQuestionnaireListFcmInvalidation } from "@/hooks/use-questionnaire-list-fcm-invalidation";
 import { useAuthStore } from "@/lib/store/auth.store";
@@ -48,10 +49,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 
-// Modal Components
-import { DeleteQuestionnaireModal } from "./components/delete-questionnaire-modal";
-import { UpdateQuestionnaireModal } from "./components/update-questionnaire-modal";
-import { CreateQuestionnaireModal } from "./components/create-questionnaire-modal";
+// Modal Components — lazy-loaded. CreateQuestionnaireModal alone is ~1,200
+// lines; splitting the three dialogs keeps them off the initial list-page chunk.
+import dynamic from "next/dynamic";
+const DeleteQuestionnaireModal = dynamic(
+  () => import("./components/delete-questionnaire-modal").then((m) => m.DeleteQuestionnaireModal),
+  { ssr: false },
+);
+const UpdateQuestionnaireModal = dynamic(
+  () => import("./components/update-questionnaire-modal").then((m) => m.UpdateQuestionnaireModal),
+  { ssr: false },
+);
+const CreateQuestionnaireModal = dynamic(
+  () => import("./components/create-questionnaire-modal").then((m) => m.CreateQuestionnaireModal),
+  { ssr: false },
+);
 
 type ViewMode = "grid" | "list";
 
@@ -223,12 +235,14 @@ function QuestionnairesDashboard() {
     }
   };
 
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 200);
+
   const filteredQuestionnaires = useMemo(() => {
     if (!data?.results) return [];
     let results = data.results;
 
-    if (searchQuery.trim()) {
-      const lowerQuery = searchQuery.toLowerCase().trim();
+    if (debouncedSearchQuery.trim()) {
+      const lowerQuery = debouncedSearchQuery.toLowerCase().trim();
       results = results.filter((q) => {
         const titleMatch = q.title?.toLowerCase().includes(lowerQuery) ?? false;
         const detailsMatch = q.details?.toLowerCase().includes(lowerQuery) ?? false;
@@ -268,7 +282,7 @@ function QuestionnairesDashboard() {
     }
 
     return results;
-  }, [data?.results, searchQuery, dateFilter, questionsFilter]);
+  }, [data?.results, debouncedSearchQuery, dateFilter, questionsFilter]);
 
   const getStatusClasses = (status: Questionnaire["status"]) => {
     const baseClasses = "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-1.5 text-[12px] font-bold capitalize tracking-wide backdrop-blur-md transition-all duration-200 hover:-translate-y-[1px] shadow-sm";
