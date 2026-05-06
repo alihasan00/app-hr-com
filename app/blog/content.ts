@@ -60,7 +60,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-18T10:00:00.000Z",
     category: "Hiring",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-phone-interviews.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-phone-interviews.jpg",
     body: [
       {
         type: "paragraph",
@@ -108,7 +108,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-04T14:30:00.000Z",
     category: "Product",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-screening-questionnaires.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-screening-questionnaires.jpg",
     body: [
       {
         type: "paragraph",
@@ -160,7 +160,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-02-19T09:00:00.000Z",
     category: "Best practices",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-fairness-screening.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-fairness-screening.jpg",
     body: [
       {
         type: "paragraph",
@@ -208,7 +208,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-02-05T11:15:00.000Z",
     category: "Compliance",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-gdpr-compliance.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-gdpr-compliance.jpg",
     body: [
       {
         type: "paragraph",
@@ -256,7 +256,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-01-22T08:45:00.000Z",
     category: "Product",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-hiring-reports.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-hiring-reports.jpg",
     body: [
       {
         type: "paragraph",
@@ -304,7 +304,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-01-08T16:00:00.000Z",
     category: "Hiring",
     author: "ReechOut Team",
-    coverImageUrl: "https://storage.googleapis.com/images.reechout.com/blog/blog-scaling-hiring.jpg",
+    coverImageUrl: "https://apphrcomsa.blob.core.windows.net/images/blog/blog-scaling-hiring.jpg",
     body: [
       {
         type: "paragraph",

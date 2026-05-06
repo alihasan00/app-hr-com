@@ -8,7 +8,7 @@ export const REECHOUT_CONNECT_URL =
   "https://cal.com/reechout-founders/connect";
 
 export const MARKETING_OG_IMAGE =
-  "https://storage.googleapis.com/images.reechout.com/android-chrome-192x192.webp";
+  "https://apphrcomsa.blob.core.windows.net/images/android-chrome-192x192.webp";
 
 /** In-app logo (local WebP). Tab icon remains `app/favicon.ico`. */
 export const SITE_LOGO = "/android-chrome-192x192.webp";

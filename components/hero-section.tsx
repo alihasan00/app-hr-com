@@ -197,7 +197,7 @@ export function HeroSection() {
             </div>
             <div className="bg-[var(--background-color)] p-1 sm:p-2">
               <Image
-                src="https://storage.googleapis.com/images.reechout.com/dashboard.webp"
+                src="https://apphrcomsa.blob.core.windows.net/images/dashboard.webp"
                 alt="ReechOut dashboard — interviews and questionnaires"
                 width={3456}
                 height={1994}
@@ -206,7 +206,7 @@ export function HeroSection() {
                 className="block h-auto w-full rounded-lg object-cover object-top dark:hidden sm:rounded-[10px]"
               />
               <Image
-                src="https://storage.googleapis.com/images.reechout.com/dashboard-dark.webp"
+                src="https://apphrcomsa.blob.core.windows.net/images/dashboard-dark.webp"
                 alt="ReechOut dashboard — interviews and questionnaires"
                 width={3456}
                 height={1994}

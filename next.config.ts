@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
  *
  * We intentionally do NOT ship a Content-Security-Policy here yet — the app
  * loads Firebase, Vapi (WebSocket + media), reCAPTCHA, Google Fonts via
- * `next/font`, and GCS images, so a naive policy will break the candidate
+ * `next/font`, and Azure Blob images, so a naive policy will break the candidate
  * flow. Add CSP in a follow-up after auditing every third-party origin.
  */
 const SECURITY_HEADERS = [
@@ -38,8 +38,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "storage.googleapis.com",
-        pathname: "/images.reechout.com/**",
+        hostname: "apphrcomsa.blob.core.windows.net",
+        pathname: "/images/**",
       },
       /** Lorem Picsum — open dummy images (https://picsum.photos/) */
       {

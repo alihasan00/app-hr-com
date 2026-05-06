@@ -18,7 +18,7 @@ export const ABOUT_US_METADATA = {
 
 /** Same CDN assets as Angular `about-us.component`. */
 export const ABOUT_US_IMAGES = {
-  hero: "https://storage.googleapis.com/images.reechout.com/about-us.webp",
+  hero: "https://apphrcomsa.blob.core.windows.net/images/about-us.webp",
 } as const;
 
 /** Fake browser chrome for hero figure (home hero pattern). */
@@ -77,7 +77,7 @@ export const ABOUT_US_FOUNDERS = [
   {
     name: "Mehmood Khosa",
     role: "Founder & Product",
-    image: "https://storage.googleapis.com/images.reechout.com/mehmood.webp",
+    image: "https://apphrcomsa.blob.core.windows.net/images/mehmood.webp",
     bio: "Focused on building simple, effective systems for hiring workflows. Leads product design and user experience across ReechOut.",
     description: "",
     education: "Harvard University",
@@ -91,7 +91,7 @@ export const ABOUT_US_FOUNDERS = [
   {
     name: "Hassan Ahmed",
     role: "Founder & Strategy",
-    image: "https://storage.googleapis.com/images.reechout.com/hassan.webp",
+    image: "https://apphrcomsa.blob.core.windows.net/images/hassan.webp",
     bio: "Focused on learning, behavior, and decision systems. Works on product direction, hiring models, and overall strategy.",
     description: "",
     education: "Harvard University",
@@ -105,7 +105,7 @@ export const ABOUT_US_FOUNDERS = [
   {
     name: "Ali Hasan",
     role: "Founder & Engineering",
-    image: "https://storage.googleapis.com/images.reechout.com/ali_hasan.webp",
+    image: "https://apphrcomsa.blob.core.windows.net/images/ali_hasan.webp",
     bio: "Leads engineering and system architecture. Builds the infrastructure that powers ReechOut.",
     description: "",
     education: "Lahore University of Management Sciences",

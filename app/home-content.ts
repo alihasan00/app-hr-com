@@ -120,7 +120,7 @@ export const HOME_TESTIMONIALS = [
     position: "",
     company: "",
     avatar:
-      "https://storage.googleapis.com/images.reechout.com/android-chrome-192x192.webp",
+      "https://apphrcomsa.blob.core.windows.net/images/android-chrome-192x192.webp",
   },
   {
     content:
@@ -129,7 +129,7 @@ export const HOME_TESTIMONIALS = [
     position: "",
     company: "",
     avatar:
-      "https://storage.googleapis.com/images.reechout.com/android-chrome-192x192.webp",
+      "https://apphrcomsa.blob.core.windows.net/images/android-chrome-192x192.webp",
   },
   {
     content:
@@ -138,7 +138,7 @@ export const HOME_TESTIMONIALS = [
     position: "",
     company: "",
     avatar:
-      "https://storage.googleapis.com/images.reechout.com/android-chrome-192x192.webp",
+      "https://apphrcomsa.blob.core.windows.net/images/android-chrome-192x192.webp",
   },
   {
     content:
@@ -147,7 +147,7 @@ export const HOME_TESTIMONIALS = [
     position: "",
     company: "",
     avatar:
-      "https://storage.googleapis.com/images.reechout.com/android-chrome-192x192.webp",
+      "https://apphrcomsa.blob.core.windows.net/images/android-chrome-192x192.webp",
   },
 ] as const;
 
@@ -165,32 +165,32 @@ export const HOME_IN_ACTION_ITEMS = [
     label: "AI Interviews",
     description:
       "Deploy intelligent, structured phone interviews. Review comprehensive transcripts and automated scoring instantly.",
-    imageLight: "https://storage.googleapis.com/images.reechout.com/interview.webp",
-    imageDark: "https://storage.googleapis.com/images.reechout.com/interview-dark.webp",
+    imageLight: "https://apphrcomsa.blob.core.windows.net/images/interview.webp",
+    imageDark: "https://apphrcomsa.blob.core.windows.net/images/interview-dark.webp",
   },
   {
     id: "questionnaire",
     label: "Smart Screening",
     description:
       "Build dynamic, role-relevant screening questionnaires to qualify candidates before scheduling live technical rounds.",
-    imageLight: "https://storage.googleapis.com/images.reechout.com/questionnaire.webp",
-    imageDark: "https://storage.googleapis.com/images.reechout.com/questionnaire-dark.webp",
+    imageLight: "https://apphrcomsa.blob.core.windows.net/images/questionnaire.webp",
+    imageDark: "https://apphrcomsa.blob.core.windows.net/images/questionnaire-dark.webp",
   },
   {
     id: "reports",
     label: "Hiring Reports",
     description:
       "Generate stakeholder-ready candidate scorecards packed with clear, objective hiring signals and competency analytics.",
-    imageLight: "https://storage.googleapis.com/images.reechout.com/report.webp",
-    imageDark: "https://storage.googleapis.com/images.reechout.com/report-dark.webp",
+    imageLight: "https://apphrcomsa.blob.core.windows.net/images/report.webp",
+    imageDark: "https://apphrcomsa.blob.core.windows.net/images/report-dark.webp",
   },
   {
     id: "personas",
     label: "Candidate Personas",
     description:
       "Define candidate personas and evaluation rubrics to ensure your entire hiring committee is aligned on what 'good' looks like.",
-    imageLight: "https://storage.googleapis.com/images.reechout.com/persona.webp",
-    imageDark: "https://storage.googleapis.com/images.reechout.com/persona-dark.webp",
+    imageLight: "https://apphrcomsa.blob.core.windows.net/images/persona.webp",
+    imageDark: "https://apphrcomsa.blob.core.windows.net/images/persona-dark.webp",
   },
 ] as const;
 
