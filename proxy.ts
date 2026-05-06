@@ -15,7 +15,7 @@ import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/config/cookies";
  * `/questionnaire` routes at the app root are public marketing pages, and the
  * `(candidate)` group is the public candidate flow.
  */
-const PROTECTED_PREFIXES = ["/interviews", "/questionnaires", "/reports"];
+const PROTECTED_PREFIXES = ["/interviews", "/questionnaires", "/report"];
 
 /**
  * Route-group folders like `(candidate)` are invisible in URLs, so the public
@@ -70,6 +70,6 @@ export const config = {
      */
     "/interviews/:path*",
     "/questionnaires/:path*",
-    "/reports/:path*",
+    "/report/:path*",
   ],
 };
