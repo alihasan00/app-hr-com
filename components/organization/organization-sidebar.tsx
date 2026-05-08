@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Users } from "lucide-react";
+import { Building2, Users, UsersRound } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 import { orgsApi } from "@/lib/api";
@@ -20,6 +20,7 @@ type NavItem = {
 const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/organization", label: "Details", icon: Building2 },
   { href: "/organization/members", label: "Members", icon: Users },
+  { href: "/organization/squads", label: "Squads", icon: UsersRound },
 ];
 
 function orgInitials(name: string | null | undefined): string {
